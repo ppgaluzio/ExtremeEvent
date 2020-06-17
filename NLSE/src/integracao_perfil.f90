@@ -7,7 +7,7 @@
 ! **************************************************************** !
 ! **************************************************************** !
 
-! BY: Paulo Paneque Galuzio (ppg06@fisica.ufpr.br)
+! BY: Paulo Paneque Galuzio
 
 ! DESCRIPTION: This program simply integrates the nonlinear
 !  schroedinger equation, using the pseudospectral method

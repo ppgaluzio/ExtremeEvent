@@ -1,5 +1,5 @@
 ! ******************************************************************
-! F E X          
+! F E X
 
 subroutine fex(neq,t,psir,psirdot)
   use tipos, only : dp
@@ -36,7 +36,7 @@ contains
   subroutine alias(y)
     implicit none
     integer :: j
-    complex, dimension(n) :: y
+    complex(dp), dimension(n) :: y
     forall(j=n/3:2*n/3)
 !!$       forall(j=n/4:3*n/4)
        y(j) = (0.0,0.0)

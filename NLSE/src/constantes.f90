@@ -17,7 +17,7 @@ module constantes
   real(dp), parameter :: tstep = 5.0d-2
   real(dp), parameter :: ts = 2.0d-1
   real(dp), parameter :: tran = 5.0d3
-  real(dp), parameter :: tea = 1.0d5
+  real(dp), parameter :: tea = 1.0d4
   real(dp), parameter :: tfinal = tran + tea
   real(dp), parameter :: tperfil = 40.0
 

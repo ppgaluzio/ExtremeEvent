@@ -23,5 +23,5 @@ end
 
 
 y₀ = [1., 0.0, 0.0]
-tspan = collect(0:0.01:100)
+tspan = [0:0.01:100...]
 res =  lsoda(fex!, y₀, tspan)

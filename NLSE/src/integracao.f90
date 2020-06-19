@@ -18,7 +18,7 @@ program integracao
   use energy_calculator, only : calcula_energia
 
   use constantes, only : n, tran, tfinal, ts, tstep, tperfil
-  use constantes, only : wsave, vb, x
+  use constantes, only : wsave, vb, x, inc, lensav, work, lenwrk
   use constantes, only : inicializa_ctes
 
   use integrador, only : neq, itol, rtol, atol, itask, istate, iopt,&
@@ -31,7 +31,7 @@ program integracao
   complex(dp), parameter :: xi = ( 0.0, 1.0 )
   complex(dp), dimension(n) :: psi, psimedio
   real(dp), dimension(neq) :: psir
-  integer :: i, nmedio
+  integer :: i, nmedio, ier
   real(dp) :: tout, t, random, tcount
 
   open(1,file='ctes.dat')
@@ -42,19 +42,21 @@ program integracao
   call inicializa_lsoda
 
   ! Condições iniciais da variável complexa
-  call random_seed()
-  psi = 1.0d-5
-  call random_number( random )
-!  random = 0.5
-  psi(1) = random
-  call random_number( random )
-!  random = 0.75
-  psi(2) = 0.1 * random
-  psi(n) = psi(2)
-  call random_number( random )
-!  random = 0.3
-  psi(3) = 0.01 * random
-  psi(n-1) = psi(3)
+ !  call random_seed()
+ !  psi = 1.0d-5
+ !  call random_number( random )
+ ! ! random = 0.5
+ !  psi(1) = random
+ !  call random_number( random )
+ ! ! random = 0.75
+ !  psi(2) = 0.1 * random
+ !  psi(n) = psi(2)
+ !  call random_number( random )
+ ! ! random = 0.3
+ !  psi(3) = 0.01 * random
+  !  psi(n-1) = psi(3)
+
+  psi = sin(x)
 
   ! inicializa a variável real
   forall(i=1:n)
@@ -62,13 +64,15 @@ program integracao
      psir(i+n) = aimag( psi(i) )
   end forall
 
+  print*, psir(1)
+
 !!$  ! condição inicial no espaço real (soliton solution)
 !!$  do i = 1, n
 !!$     psi(i) = (sqrt(2.0)/cosh(sqrt(2.0)*x(i)))*exp(xi*0.05*x(i))
 !!$     psi(i) = sqrt(1.5) * exp( -xi * (-0.17683882) ) &
 !!$          + 1.0d-3 * exp( xi * vb * x(i) )
 !!$  enddo
-!!$  call cfftf(n,psi,wsave)
+!!$  call cfft1f(n,psi,wsave)
 !!$  psi = psi / real(n)
 
   ! ****************************************************************
@@ -78,8 +82,8 @@ program integracao
   t = 0.0
   transiente : do while( t < tran )
      tout = t + tstep
-!!$     call dlsode(fex,neq,psir,t,tout,itol,rtol,atol,itask,istate,iopt,&
-!!$          rwork,lrw,iwork,liw,jt,mf)
+     ! call dlsode(fex,neq,psir,t,tout,itol,rtol,atol,itask,istate,iopt,&
+     !      rwork,lrw,iwork,liw,jt,mf)
      call dlsoda(fex,neq,psir,t,tout,itol,rtol,atol,itask,istate,iopt,&
           rwork,lrw,iwork,liw,mf,jt)
   end do transiente
@@ -98,9 +102,12 @@ program integracao
      tcount = tcount + tstep
      call dlsoda(fex,neq,psir,t,tout,itol,rtol,atol,itask,istate,iopt,&
           rwork,lrw,iwork,liw,mf,jt)
+     ! call dlsode(fex,neq,psir,t,tout,itol,rtol,atol,itask,istate,iopt,&
+     !      rwork,lrw,iwork,liw,jt,mf)
+     print*, psir(1)
 
      escreve : if ( tcount > ts ) then
-        write(1,"(6(x,f32.16))") t,calcula_energia(psir), psir(1)
+        write(1,"(6(x,f32.16))") t, calcula_energia(psir), psir(1)
 
         forall(i=1:n)
            psi(i) = cmplx( psir(i), psir(i+n) )
@@ -112,6 +119,7 @@ program integracao
         perfil : if ( t > (tfinal-tperfil)) then
 
            call cfftb(n,psi,wsave)
+           ! call cfft1b(n, inc, psi, n, wsave, lensav, work, lenwrk, ier)
 
            do i = 1, n
               write(2,"(3(f20.10,x))") t, x(i), abs(psi(i))

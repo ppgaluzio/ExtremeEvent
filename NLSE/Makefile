@@ -12,52 +12,53 @@ CTES = constantes.f90
 ENER = energy.calculator.f90
 TIPOS = tipos.f90
 FEX = fex.f90
+FFT = fftpack5.1.f90
 
-all: constantes.o diff.finite.o fex.o integracao.o energy.calculator.o tipos.o comp perf
+all: constantes.o diff.finite.o fex.o integracao.o energy.calculator.o tipos.o comp # perf
 
-perf:  constantes.o fex.o perfil.o tipos.o
-	$(I) constantes.o fex.o perfil.o $(LODE) $(LFFT) $(LEST) -o PERFIL
-	@echo "***********************************************************************"
-	@echo "PERFIL OK"
-	@echo
+# perf:  constantes.o fex.o perfil.o tipos.o fftpack5.1.o
+# 	$(I) constantes.o fex.o perfil.o fftpack5.1.o $(LODE) $(LEST) -o PERFIL
+# 	@echo "***********************************************************************"
+# 	@echo "PERFIL OK"
+# 	@echo
 
-comp: constantes.o diff.finite.o fex.o integracao.o energy.calculator.o tipos.o
-	$(I) constantes.o diff.finite.o fex.o energy.calculator.o integracao.o $(LODE) $(LFFT) $(LEST) -o $(EXEC)
+comp: constantes.o diff.finite.o fex.o integracao.o energy.calculator.o tipos.o # fftpack5.1.o
+	$(I) constantes.o diff.finite.o fex.o energy.calculator.o integracao.o $(LODE) $(LEST) $(LFFT) -o $(EXEC)
 	@echo "***********************************************************************"
 	@echo "COMPILACAO OK"
 	@echo
 
-integracao.o: $(SRC)/$(KURT) constantes.o energy.calculator.o tipos.o
+integracao.o: $(SRC)/$(KURT) constantes.o energy.calculator.o tipos.o # fftpack5.1.o
 	$(I) -c $(SRC)/$(KURT)
 	@echo "***********************************************************************"
 	@echo "INTEGRACAO OK"
 	@echo
 
-perfil.o: $(SRC)/$(PERFIL) constantes.o tipos.o
-	$(I) -c $(SRC)/$(PERFIL) -o perfil.o
-	@echo "***********************************************************************"
-	@echo "INTEGRACAO OK"
-	@echo
+# perfil.o: $(SRC)/$(PERFIL) constantes.o tipos.o fftpack5.1.o
+# 	$(I) -c $(SRC)/$(PERFIL) -o perfil.o
+# 	@echo "***********************************************************************"
+# 	@echo "INTEGRACAO OK"
+# 	@echo
 
-energy.calculator.o: $(SRC)/$(ENER) constantes.o diff.finite.o tipos.o
+energy.calculator.o: $(SRC)/$(ENER) constantes.o diff.finite.o tipos.o # fftpack5.1.o
 	$(I) -c $(SRC)/$(ENER)
 	@echo "***********************************************************************"
 	@echo "ENERGY OK"
 	@echo
 
-fex.o: $(SRC)/$(FEX) constantes.o tipos.o
+fex.o: $(SRC)/$(FEX) constantes.o tipos.o # fftpack5.1.o
 	$(I) -c $(SRC)/$(FEX)
 	@echo "***********************************************************************"
 	@echo "FEX OK"
 	@echo
 
-diff.finite.o: $(SRC)/$(DIFF) tipos.o
+diff.finite.o: $(SRC)/$(DIFF) tipos.o # fftpack5.1.o
 	$(I) -c $(SRC)/$(DIFF)
 	@echo "***********************************************************************"
 	@echo "DIFF OK"
 	@echo
 
-constantes.o: $(SRC)/$(CTES) tipos.o
+constantes.o: $(SRC)/$(CTES) tipos.o # fftpack5.1.o
 	$(I) -c $(SRC)/$(CTES)
 	@echo "***********************************************************************"
 	@echo "CONSTANTES OK"
@@ -65,3 +66,6 @@ constantes.o: $(SRC)/$(CTES) tipos.o
 
 tipos.o: $(SRC)/$(TIPOS)
 	$(I) -c $(SRC)/$(TIPOS)
+
+# fftpack5.1.o: $(SRC)/$(FFT)
+# 	$(I) -c $(SRC)/$(FFT)

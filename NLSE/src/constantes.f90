@@ -16,7 +16,7 @@ module constantes
   ! Time constants
   real(dp), parameter :: tstep = 5.0d-2
   real(dp), parameter :: ts = 2.0d-1
-  real(dp), parameter :: tran = 5.0d3
+  real(dp), parameter :: tran = 0.0
   real(dp), parameter :: tea = 1.0d4
   real(dp), parameter :: tfinal = tran + tea
   real(dp), parameter :: tperfil = 40.0
@@ -24,15 +24,22 @@ module constantes
   real(dp), parameter :: pi2 = 8.0 * atan( 1.0 )
   real(dp), parameter :: omega2 = 0.45
   real(dp), parameter :: g = 2.0
-  real(dp), parameter :: gamma = 0.0005
+  real(dp), parameter :: gamma = 0.01
   real(dp), parameter :: vb = 0.9
   real(dp), parameter :: epssi = 0.3
   real(dp), parameter :: l = pi2 / vb
   real(dp), parameter :: dx = l / real(n)
   complex(dp), parameter :: xi = ( 0.0, 1.0 )
 
+  integer, parameter :: lensav = 2 * n + int(log(real(n, kind=4)) / log(2.0E+00)) + 4
+  integer, parameter :: lenwrk = 2 * n
+  integer, parameter :: inc = 1
+
   real(dp), dimension(n) :: x, k
   real(dp), dimension(4*n+15) :: wsave
+  ! real(dp), dimension(lensav) :: wsave
+  real(dp), dimension(lenwrk) :: work
+
   complex(dp), dimension(n) :: epss
 
   save
@@ -42,11 +49,14 @@ module constantes
 contains
 
   subroutine inicializa_ctes
-    integer :: i
-    call cffti( n, wsave )
+    integer :: i, ier
+
+    call cffti(n, wsave)
     epss = cmplx( epssi, 0.0 )
-    call cfftf( n, epss, wsave )
+    call cfftf(n, epss, wsave)
     epss = epss / real( n )
+    print*, epss
+    pause
     do i = 1, n
        x(i) = l * real( i - n/2 ) / real(n)
     end do

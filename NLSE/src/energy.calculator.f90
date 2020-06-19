@@ -1,34 +1,36 @@
 module energy_calculator
   use tipos, only : dp
-  use constantes, only : n, nctes, dx, l, omega2, epssi, g, wsave
+  use constantes, only : n, nctes, dx, l, omega2, epssi, g, wsave,&
+       & inc, lensav, work, lenwrk
   use finite_diff, only : derivada
   implicit none
   complex(dp), dimension(n) :: psi
-  
+
   save
   private
   public :: calcula_energia
 contains
-  
+
   function calcula_energia(psir) result(energia)
     real(dp), dimension(:), intent(in) :: psir
     real(dp), dimension(nctes) :: energia
 
     complex(dp) :: diff
     real(dp) :: psi2, psi4, psix2, psipls, p
-    integer :: i
+    integer :: i, ier
 
     if ( size(psir) /= 2*n ) then
        write(0,"('ERRO -- em calcula_energia -- wrong psir size')")
        call exit(3)
     end if
-    
+
     forall(i=1:n)
        psi(i) = cmplx( psir(i), psir(i+n) )
     end forall
 
     call cfftb(n,psi,wsave)
-    
+    ! call cfft1b(n, inc, psi, n, wsave, lensav, work, lenwrk, ier)
+
     psi2 = 0.0
     psi4 = 0.0
     psix2 = 0.0

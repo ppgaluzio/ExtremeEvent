@@ -42,17 +42,17 @@ const vb = 0.9
 const ϵ₀ = 0.3
 const Δt = 0.1
 const tf = 1.0e6
-const nt = Int(tf ÷ Δt) + 1
 
-# allocate Mass vector
-M = Vector(undef, nt);
+ψ₀ = Array{Complex{Float64},1}(undef, n)
+u₀ = Array{Float64,1}(undef, 2*n)
 
 # ϵ in fourier space
 ϵ = ones(n) * ϵ₀ + zeros(n) * im;
 fft!(ϵ);
 
 # wave number vector
-k = Vector(undef, n);
+k = Vector{Float64}(undef, n);
+ψ₀ = zeros()
 
 for i in 1: n÷2+1
     k[i] = float(i-1);
@@ -60,6 +60,9 @@ end
 for i in n÷2+2: n
     k[i] = float(-(n-(i-1)));
 end
+
+p = [ϵ, g, ω², vb, γ, k];
+tspan = (0, tf);
 
 for i in 1:50
 
@@ -73,8 +76,6 @@ for i in 1:50
 
     u₀ = [real(ψ₀); imag(ψ₀)];
 
-    tspan = (0, tf);
-    p = [ϵ, g, ω², vb, γ, k];
 
     prob = ODEProblem(fex!, u₀, tspan, p);
     sol = solve(prob, AutoTsit5(Rosenbrock23()),
@@ -82,11 +83,11 @@ for i in 1:50
 
     f = open(string("nlse_", repr(rand())[3:7], ".dat"), "w")
 
-    for i in 1:nt
+    for i in 1:length(sol)
         ϕ = sol[i][1:n] + im * sol[i][(n+1):end]
         ifft!(ϕ)
-        M[i] = real(mean(abs2.(ϕ)))
-        write(f, "$(sol.t[i]) $(M[i])\n")
+        M = real(mean(abs2.(ϕ)))
+        write(f, "$(sol.t[i]) $(M)\n")
     end
 
     # plot(sol.t, M)

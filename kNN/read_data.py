@@ -3,13 +3,23 @@
 import glob
 import numpy as np
 import os
-import matplotlib.pyplot as pl
 import seaborn as sns
+
+
+from extrevent import ExtremeEvent
 
 sns.set(style='ticks')
 
 FOLDER = "../NLSE"
 
+fator = 1
+"""factor that multiplies the sd to determine extreme events threshold
+
+"""
+
+sectionlength = 50
+"""length of the ts to analise, in time unitsXF
+"""
 
 def main():
 
@@ -22,12 +32,19 @@ def main():
     sd = np.empty(len(files))
 
     for i, filename in enumerate(files):
-        ts[i] = np.loadtxt(filename)
-        median[i] = np.median(ts[i][:, 1])
-        sd[i] = np.std(ts[i][:, 1])
+        ts[i] = ExtremeEvent().readts(filename)
+        median[i] = ts[i].median()
+        sd[i] = ts[i].std()
 
     medall = np.median(median)
     sdall = np.mean(sd)
+
+    threshold = medall + fator * sdall
+
+
+
+
+
 
     pass
 

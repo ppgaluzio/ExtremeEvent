@@ -18,10 +18,16 @@ def main():
 
     # create the array to store the time series
     ts = np.empty(len(files), dtype=object)
+    median = np.empty(len(files))
+    sd = np.empty(len(files))
 
     for i, filename in enumerate(files):
         ts[i] = np.loadtxt(filename)
+        median[i] = np.median(ts[i][:, 1])
+        sd[i] = np.std(ts[i][:, 1])
 
+    medall = np.median(median)
+    sdall = np.mean(sd)
 
     pass
 

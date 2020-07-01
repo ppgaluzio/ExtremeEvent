@@ -35,7 +35,7 @@ class ExtremeEvent(object):
         return np.median(self.x)
 
     def std(self):
-        """return the standard deviation of the time series
+        """return the standard deviation of the time series`
         """
         return np.std(self.x)
 

@@ -12,14 +12,10 @@ sns.set(style='ticks')
 
 FOLDER = "../NLSE"
 
-fator = 1
-"""factor that multiplies the sd to determine extreme events threshold
+THRESHOLD_FACTOR = 1
 
-"""
+TIME_WINDOW_LENGTH = 50
 
-sectionlength = 50
-"""length of the ts to analise, in time unitsXF
-"""
 
 def main():
 

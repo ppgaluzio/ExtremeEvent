@@ -3,12 +3,12 @@
 import glob
 import numpy as np
 import os
+import matplotlib.pyplot as pl
 import seaborn as sns
-
 
 from extrevent import ExtremeEvent
 
-sns.set(style='ticks')
+sns.set(style='white')
 
 FOLDER = "../NLSE"
 
@@ -29,18 +29,16 @@ def main():
 
     for i, filename in enumerate(files):
         ts[i] = ExtremeEvent().readts(filename)
-        median[i] = ts[i].median()
-        sd[i] = ts[i].std()
+        median[i] = ts[i].median
+        sd[i] = ts[i].std
 
     medall = np.median(median)
     sdall = np.mean(sd)
 
-    threshold = medall + fator * sdall
+    threshold = medall + THRESHOLD_FACTOR * sdall
 
-
-
-
-
+    fig = ts[0].plot(threshold)
+    pl.close(fig)
 
     pass
 

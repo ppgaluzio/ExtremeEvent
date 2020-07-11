@@ -4,11 +4,10 @@ import glob
 import numpy as np
 import os
 import matplotlib.pyplot as pl
-import seaborn as sns
 
-from extrevent import ExtremeEvent
+from time_series import TimeSeriesContainer
+from time_series import plot_ts
 
-sns.set(style='white')
 
 FOLDER = "../NLSE"
 
@@ -28,19 +27,15 @@ def main():
     sd = np.empty(len(files))
 
     for i, filename in enumerate(files):
-        ts[i] = ExtremeEvent().readts(filename)
+        ts[i] = TimeSeriesContainer(THRESHOLD_FACTOR).read(filename)
         median[i] = ts[i].median
         sd[i] = ts[i].std
 
-    medall = np.median(median)
-    sdall = np.mean(sd)
-
-    threshold = medall + THRESHOLD_FACTOR * sdall
-
-    fig = ts[0].plot(threshold)
+    fig = plot_ts(ts[0].t, ts[0].x, ts[0].threshold)
     pl.close(fig)
 
     pass
+
 
 if __name__ == '__main__':
     main()

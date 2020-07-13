@@ -8,11 +8,12 @@ sns.set(style='white')
 
 class ExtremeEventIdentifier:
 
-    def __init__(self, timeseries):
+    def __init__(self, timeseries, neighborhood_size):
         """Identify the occurrence of extreme events in the given time series
 
         """
         self.timeseries = timeseries
+        self.neighborhood_size = neighborhood_size
 
     def select_X_y(self):
         """identifies the extreme events and select a X and y pair for each
@@ -20,19 +21,21 @@ class ExtremeEventIdentifier:
         events as well
 
         """
-       coordinates = find_ext_events_coordinates(self.timeseries)
+        coordinates = find_ext_events_coordinates(
+            self.timeseries, self.neighborhood_size)
 
         pass
 
 
-def find_ext_events_coordinates(timeseries):
+def find_ext_events_coordinates(timeseries, neighborhood_size):
     """given a time series and a threshold, returns the index of the
     maximum point and of the first point of all the extreme events
 
     """
 
-    smoothx = apply_smooth_filter_to_x(timeseries)
-    mask = is_above_threshold(smoothx, timeseries.threshold)
+    mask = is_above_threshold(timeseries.x, timeseries.threshold)
+    mask = vote_selection_of_mask_value_based_on_neighbors(
+        mask, neighborhood_size)
     coordinates = get_index_of_beggining_and_end_of_extreme_event(mask)
     peaks = get_index_of_max_points(coordinates, timeseries.x)
     overall_coordinates = construct_list_of_tuples_w_coordinates(
@@ -46,37 +49,56 @@ def construct_list_of_tuples_w_coordinates(peaks, coordinates):
     containing the index of the beggining and of the max of all the
     extreme events
     """
-    pass
+    overall_coordinates = list()
+    for coords in zip(coordinates, peaks):
+        overall_coordinates.append((coords[0][0], coords[1]))
+    return overall_coordinates
 
 
-def get_index_of_max_points(coordinates, timeseries.x):
-    """given the coordinates of extreme events, returns the coordinates of the peaks
+def get_index_of_max_points(coordinates, x):
+    """given the coordinates of extreme events, returns the coordinates of
+    the peaks
+
     """
-    pass
+    peaks = np.empty(len(coordinates))
+    for i, coord in enumerate(coordinates):
+        peaks[i] = np.max(x[coord[0]:coord[1]])
+    return peaks
 
 
 def get_index_of_beggining_and_end_of_extreme_event(mask):
     """return a list with the index of where the extreme event starts and ends
 
     """
-    pass
+    coordinates = np.array(mask[1:] ^ mask[:-1]).nonzero()[0]
+    tuples = list()
+    for i, coord in enumerate(coordinates):
+        if not mask[coord]:
+            tuples.append((coordinates[i], coordinates[i+1]))
+    return tuples
 
 
-def is_above_threshold(smoothx, threshold):
+def vote_selection_of_mask_value_based_on_neighbors(mask, neighborhood_size):
+    """each element of the new mask is a majority vote of its neighborhood
+
+    """
+    newmask = np.empty_like(mask)
+    pad = neighborhood_size // 2
+    for i in range(len(mask)):
+        newmask[i] = vote_array(mask[i-pad:i+pad])
+    return newmask
+
+
+def vote_array(mask):
+    """return the vote for the current element in the mask
+
+    """
+    return np.sum(mask) > 0.5 * len(mask)
+
+
+def is_above_threshold(x, threshold):
     """return a mask with true wheneve the smoth time series is
     above the threshold valueñ
 
     """
-    pass
-
-
-def apply_smooth_filter_to_x(timeseries):
-    windowlenght = find_optimal_window_length(timeseries.x)
-    smoothx = savgol_filter(timeseries.x,)
-    return smoothx
-
-
-def find_optimal_window_length(x):
-    """find the optimal length for the savgol filter
-    """
-    pass
+    return x > threshold

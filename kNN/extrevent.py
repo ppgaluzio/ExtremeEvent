@@ -33,7 +33,7 @@ def find_ext_events_coordinates(timeseries, neighborhood_size):
 
     """
 
-    mask = is_above_threshold(timeseries.x, timeseries.threshold)
+    mask = timeseries.x > timeseries.threshold
     mask = vote_selection_of_mask_value_based_on_neighbors(
         mask, neighborhood_size)
     coordinates = get_index_of_beggining_and_end_of_extreme_event(mask)
@@ -94,11 +94,3 @@ def vote_array(mask):
 
     """
     return np.sum(mask) > 0.5 * len(mask)
-
-
-def is_above_threshold(x, threshold):
-    """return a mask with true wheneve the smoth time series is
-    above the threshold valueñ
-
-    """
-    return x > threshold

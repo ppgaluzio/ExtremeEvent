@@ -24,7 +24,7 @@ class ExtremeEventIdentifier:
         coordinates = find_ext_events_coordinates(
             self.timeseries, self.neighborhood_size)
 
-        pass
+        return np.asarray(coordinates, dtype=np.int)
 
 
 def find_ext_events_coordinates(timeseries, neighborhood_size):
@@ -36,10 +36,12 @@ def find_ext_events_coordinates(timeseries, neighborhood_size):
     mask = timeseries.x > timeseries.threshold
     mask = vote_selection_of_mask_value_based_on_neighbors(
         mask, neighborhood_size)
-    coordinates = get_index_of_beggining_and_end_of_extreme_event(mask)
-    peaks = get_index_of_max_points(coordinates, timeseries.x)
+    fine_coordinates = get_index_of_beggining_and_end_of_extreme_event(mask)
+    coarse_coordinates = group_ext_events_closer_than_neighborhood(
+        fine_coordinates, neighborhood_size)
+    peaks = get_index_of_max_points(coarse_coordinates, timeseries.x)
     overall_coordinates = construct_list_of_tuples_w_coordinates(
-        peaks, coordinates)
+        peaks, coarse_coordinates)
     return overall_coordinates
 
 
@@ -66,6 +68,50 @@ def get_index_of_max_points(coordinates, x):
     return peaks
 
 
+def group_ext_events_closer_than_neighborhood(fine_coordinates, neighborhood):
+    """whenever two extreme events are closer by a distance smaller than
+    the neighborhood, group then together
+
+    """
+    distance = fine_coordinates[1:, 0] - fine_coordinates[:-1, 1]
+    closeptscoord = distance < neighborhood
+
+    coarse_coordinates = aggregate_close_points(
+        fine_coordinates, closeptscoord)
+
+    return np.array(coarse_coordinates)
+
+
+def aggregate_close_points(fine_coordinates, closeptscoord, outputlist=None):
+    """given a set of coordinates and a mask on where to glue them, return
+    a list with the coordinates aggregated
+
+    Ex.:
+
+    >>> fc = np.array([(1, 2), (2, 3), (3, 4), (5, 6)])
+    >>> coord = [False, True, False]
+    >>> x = aggregate_close_points(fc, coord)
+    [[1, 2], [1, 4], [1, 6]]
+
+    """
+
+    if outputlist is None:
+        outputlist = list()
+
+    if len(closeptscoord) == 0:
+        outputlist.append(fine_coordinates[0].tolist())
+        return outputlist
+
+    if not closeptscoord[0]:
+        outputlist.append(fine_coordinates[0].tolist())
+    else:
+        fine_coordinates[1][0] = fine_coordinates[0][0]
+
+    outputlist = aggregate_close_points(
+        fine_coordinates[1:], closeptscoord[1:], outputlist)
+    return outputlist
+
+
 def get_index_of_beggining_and_end_of_extreme_event(mask):
     """return a list with the index of where the extreme event starts and ends
 
@@ -75,7 +121,7 @@ def get_index_of_beggining_and_end_of_extreme_event(mask):
     for i, coord in enumerate(coordinates):
         if not mask[coord]:
             tuples.append((coordinates[i], coordinates[i+1]))
-    return tuples
+    return np.array(tuples)
 
 
 def vote_selection_of_mask_value_based_on_neighbors(mask, neighborhood_size):

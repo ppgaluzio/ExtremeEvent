@@ -39,7 +39,7 @@ const ω² = 0.45
 const g = 2.0
 const γ = 0.01
 const vb = 0.9
-const ϵ₀ = 0.3
+const ϵ₀ = 0.23
 const Δt = 0.1
 const tf = 1.0e6
 
@@ -82,6 +82,8 @@ for i in 1:50
                 reltol=1e-8, abstol=1e-8, saveat=Δt);
 
     f = open(string("nlse_", repr(rand())[3:7], ".dat"), "w")
+
+    # M = Array{Float64,1}(undef, length(sol))
 
     for i in 1:length(sol)
         ϕ = sol[i][1:n] + im * sol[i][(n+1):end]

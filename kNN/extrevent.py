@@ -42,7 +42,13 @@ class ExtremeEventIdentifier:
         X = np.concatenate([positiveX, negativeX])
         y = np.array([True] * len(positiveX) + [False] * len(negativeX))
 
-        return X, y
+        randomized_index = np.random.shuffle(len(y))
+
+        return X[randomized_index], y[randomized_index]
+
+
+def is_not_extreme_event(xlength, pad, ts, i):
+    return (ts.x[i: i + xlength+pad] < ts.threshold).all()
 
 
 def get_negative_X(num_occurences, xlength, pad, ts):
@@ -55,7 +61,7 @@ def get_negative_X(num_occurences, xlength, pad, ts):
 
     while True:
         i = np.random.choice(ts.n)
-        if (ts.x[i: i + xlength+pad] < ts.threshold).all():
+        if is_not_extreme_event(xlength, pad, ts, i):
             X[counter] = ts.x[i: i + xlength]
             counter += 1
 
@@ -73,7 +79,6 @@ def get_negative_X(num_occurences, xlength, pad, ts):
 
 
 def get_positive_X(positive_indexes, xlength, x):
-
     X = np.empty((len(positive_indexes), xlength))
     for i, pi in enumerate(positive_indexes):
         X[i] = x[pi: pi + xlength]
@@ -83,6 +88,9 @@ def get_positive_X(positive_indexes, xlength, x):
 
 def get_sub_time_series_indexes_from_positive_events(
         coordinates, xlength, pad):
+    """return the indexes of the small sub time series before a positive event
+
+    """
     indexes = []
     for i in coordinates:
         ix = i[0] - (pad + xlength)

@@ -6,6 +6,10 @@ from scipy.signal import savgol_filter
 sns.set(style='white')
 
 
+class ConvergenceError(Exception):
+    pass
+
+
 class ExtremeEventIdentifier:
 
     def __init__(self, timeseries, neighborhood_size):
@@ -15,7 +19,7 @@ class ExtremeEventIdentifier:
         self.timeseries = timeseries
         self.neighborhood_size = neighborhood_size
 
-    def select_X_y(self):
+    def select_X_y(self, xlength, pad):
         """identifies the extreme events and select a X and y pair for each
         one, tries to select the same amount of pairs for non extreme
         events as well
@@ -24,7 +28,67 @@ class ExtremeEventIdentifier:
         coordinates = find_ext_events_coordinates(
             self.timeseries, self.neighborhood_size)
 
-        return np.asarray(coordinates, dtype=np.int)
+        # peaks = get_index_of_max_points(coordinates, self.timeseries.x)
+
+        positive_indexes = get_sub_time_series_indexes_from_positive_events(
+            coordinates, xlength, pad)
+
+        positiveX = get_positive_X(
+            positive_indexes, xlength, self.timeseries.x)
+
+        negativeX = get_negative_X(
+            len(positiveX), xlength, pad, self.timeseries)
+
+        X = np.concatenate([positiveX, negativeX])
+        y = np.array([True] * len(positiveX) + [False] * len(negativeX))
+
+        return X, y
+
+
+def get_negative_X(num_occurences, xlength, pad, ts):
+    X = np.empty((num_occurences, xlength))
+
+    max_attempts = 10 * num_occurences
+
+    counter = 0
+    num_attempts = 0
+
+    while True:
+        i = np.random.choice(ts.n)
+        if (ts.x[i: i + xlength+pad] < ts.threshold).all():
+            X[counter] = ts.x[i: i + xlength]
+            counter += 1
+
+        if counter == num_occurences:
+            break
+
+        num_attempts += 1
+        if num_attempts > max_attempts:
+            raise ConvergenceError(
+                "reached maximum number of attempts to find "
+                "non-extreme events occurence, perhaps the extreme events "
+                "are too common")
+
+    return X
+
+
+def get_positive_X(positive_indexes, xlength, x):
+
+    X = np.empty((len(positive_indexes), xlength))
+    for i, pi in enumerate(positive_indexes):
+        X[i] = x[pi: pi + xlength]
+
+    return X
+
+
+def get_sub_time_series_indexes_from_positive_events(
+        coordinates, xlength, pad):
+    indexes = []
+    for i in coordinates:
+        ix = i[0] - (pad + xlength)
+        if ix >= 0:
+            indexes.append(ix)
+    return indexes
 
 
 def find_ext_events_coordinates(timeseries, neighborhood_size):
@@ -39,10 +103,7 @@ def find_ext_events_coordinates(timeseries, neighborhood_size):
     fine_coordinates = get_index_of_beggining_and_end_of_extreme_event(mask)
     coarse_coordinates = group_ext_events_closer_than_neighborhood(
         fine_coordinates, neighborhood_size)
-    peaks = get_index_of_max_points(coarse_coordinates, timeseries.x)
-    overall_coordinates = construct_list_of_tuples_w_coordinates(
-        peaks, coarse_coordinates)
-    return overall_coordinates
+    return coarse_coordinates
 
 
 def construct_list_of_tuples_w_coordinates(peaks, coordinates):

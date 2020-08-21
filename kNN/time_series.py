@@ -38,6 +38,10 @@ class TimeSeriesContainer:
         return len(self.t)
 
     @property
+    def n(self):
+        return len(self.t)
+
+    @property
     def dt(self):
         return np.round(np.mean(self.t[1:] - self.t[:-1]), decimals=2)
 
